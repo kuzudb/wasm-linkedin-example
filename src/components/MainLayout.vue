@@ -1,6 +1,6 @@
 <template>
   <div>
-    <drop-zone @filesSelected="handleFilesSelected" />
+    <drop-zone @files-selected="handleFilesSelected" />
   </div>
 </template>
 

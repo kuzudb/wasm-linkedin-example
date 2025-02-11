@@ -4,20 +4,33 @@
     <div class="col-md-8 mt-5">
       <div class="bg-white p-5 rounded shadow-sm border">
         <div class="dropzone d-block">
-          <label ref="dropzone" for="files" class="dropzone-container">
+          <label
+            ref="dropzone"
+            for="files"
+            class="dropzone-container"
+          >
             <div class="file-icon"><i class="fa-solid fa-file-circle-plus text-primary" /></div>
             <div class="text-center pt-3 px-5">
-              <p class="w-80 h5 text-dark fw-bold">Drag your CSV or Parquet files here to get started.
+              <p class="w-80 h5 text-dark fw-bold">Drag CSV files from your LinkedIn dump here to get started.
               </p>
               <div class="hr-sect">or</div>
-              <button class="btn btn-primary mb-2" @click="selectFiles">
+              <button
+                class="btn btn-primary mb-2"
+                @click="selectFiles"
+              >
                 <i class="fa-solid fa-folder-open" />
                 &nbsp;
                 Browse Files
               </button>
             </div>
           </label>
-          <input ref="fileInput" type="file" multiple class="file-input" @change.prevent="handleFilesSelected">
+          <input
+            ref="fileInput"
+            type="file"
+            multiple
+            class="file-input"
+            @change.prevent="handleFilesSelected"
+          >
         </div>
       </div>
     </div>
