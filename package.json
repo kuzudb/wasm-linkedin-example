@@ -1,0 +1,63 @@
+{
+  "name": "kuzu-wasm-demo",
+  "version": "0.1.0",
+  "license": "MIT",
+  "scripts": {
+    "serve": "NODE_ENV=development nodemon --exec \"vue-cli-service serve\"",
+    "serve-prod": "NODE_ENV=production node src/server/index.js",
+    "build": "KUZU_PATH=. vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "axios": "^1.4.0",
+    "bootstrap": "^5.3.1",
+    "core-js": "^3.8.3",
+    "cors": "^2.8.5",
+    "dropzone": "^6.0.0-beta.2",
+    "express": "^4.18.2",
+    "kuzu-wasm": "0.8.0",
+    "moment": "^2.29.4",
+    "openai": "^4.20.1",
+    "pinia": "^2.0.23",
+    "pino": "^8.16.1",
+    "pino-pretty": "^10.2.3",
+    "uuid": "^9.0.1",
+    "vue": "^3.2.13"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "^5.0.8",
+    "@vue/cli-service": "~5.0.0",
+    "antlr4ng-cli": "^1.0.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "eslint": "^8.55.0",
+    "eslint-plugin-vue": "^9.19.2",
+    "monaco-editor-webpack-plugin": "^7.1.0",
+    "nodemon": "^3.0.1",
+    "sass": "^1.66.1",
+    "sass-loader": "^13.3.2",
+    "webpack": "^5.88.2"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}
