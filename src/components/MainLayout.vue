@@ -6,16 +6,17 @@
 
 <script lang="js">
 import Kuzu from '../utils/KuzuWasm'; 
+import WebLlm from '../utils/WebLlm';
+import LinkedInDataConverter from '../utils/LinkedInDataConverter';
 import DropZone from './DropZone.vue';
 
 export default {
   name: "MainLayout",
   components: {
     DropZone,
-
   },
   data: () => ({
-
+    converter: null,
   }),
   computed: {
 
@@ -27,11 +28,16 @@ export default {
 
   },
   async created() {
-
+    await Kuzu.init();
+    this.converter = new LinkedInDataConverter(Kuzu);
+    await WebLlm.init();
   },
   methods: {
-    handleFilesSelected(files) {
-      console.log(files);
+    async handleFilesSelected(files) {
+      for (let i = 0; i < files.length; ++i) {
+        await this.converter.handleFile(files[i]);
+      }
+      await this.converter.createTables();
     },
   }
 };

@@ -1,9 +1,6 @@
 import kuzu from "kuzu-wasm";
 import { TABLE_TYPES } from "./Constants";
 
-// TODO: Refactor this and extract common logic between frontend WASM module
-// and backend Node.js module after we move the backend to use ESM instead of 
-// CommonJS.
 class Kuzu {
   constructor() {
     this.db = null;
