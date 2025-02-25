@@ -1,6 +1,6 @@
 import * as webllm from "@mlc-ai/web-llm";
 import { CYPHER_QA_PROMPT, QUERY_GENERATION_PROMPT } from "./Prompts";
-const MODEL_NAME = "Mistral-7B-Instruct-v0.3-q4f32_1-MLC";
+const MODEL_NAME = "Phi-3.5-mini-instruct-q4f16_1-MLC";
 import Kuzu from './KuzuWasm';
 
 class WebLlm {
