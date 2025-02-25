@@ -1,3 +1,5 @@
+import yaml from 'js-yaml';
+
 const int128Replacer = (_, value) => {
   if (typeof value === "bigint") {
     return value.toString();
@@ -5,7 +7,42 @@ const int128Replacer = (_, value) => {
   return value;
 };
 
+const schemaToYaml = (schema) => {
+  const formattedSchema = {
+    nodeTables: schema.nodeTables.map(node => ({
+      name: node.name,
+      properties: node.properties.map(prop => {
+        const processedProp = {
+          name: prop.name,
+          type: prop.type,
+        };
+        if (prop.isPrimaryKey) {
+          processedProp.isPrimaryKey = true;
+        }
+        return processedProp;
+      }
+      )
+    })),
+    relTables: schema.relTables.map(rel => ({
+      name: rel.name,
+      properties: rel.properties.map(prop => ({
+        name: prop.name,
+        type: prop.type
+      })),
+      connectivity: rel.connectivity
+    }))
+  };
+  return yaml.dump(formattedSchema, { noRefs: true });
+};
+
 const QUERY_GENERATION_PROMPT = (question, schema) => {
+  let formattedSchema;
+  try {
+    formattedSchema = schemaToYaml(schema);
+  }
+  catch (e) {
+    formattedSchema = JSON.stringify(schema, int128Replacer, 2);
+  }
   const prompt = `Task:Generate Kùzu Cypher statement to query a graph database.
 Instructions:
 Generate the Kùzu dialect of Cypher with the following rules in mind:
@@ -16,13 +53,12 @@ Generate the Kùzu dialect of Cypher with the following rules in mind:
 Use only the provided relationship types and properties in the schema.
 Do not use any other relationship types or properties that are not provided.
 
-In the current schema, there is no relationship at all. Please generate a Cypher statement only using the node table.
-
 Schema:
-${JSON.stringify(schema)}
+${formattedSchema}
 Note: Do not include any explanations or apologies in your responses.
 Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
 Do not include any text except the generated Cypher statement.
+Do not wrap the Cypher statement in any other text or symbols.
 
 The question is:
 ${question}

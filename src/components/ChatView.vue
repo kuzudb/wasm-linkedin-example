@@ -97,7 +97,7 @@ export default {
         this.rawResult = raw;
       } catch (error) {
         console.error("Error:", error);
-        this.errorMessage = "An error occurred while processing your request. Please try again.";
+        this.errorMessage = "There was an error evaluating the generated query.";
       } finally {
         this.loading = false;
       }
