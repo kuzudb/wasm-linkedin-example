@@ -1,6 +1,13 @@
 1<template>
-  <div class="visualization-view__wrapper" :style="{ height: containerHeight, width: containerWidth }">
-    <div ref="graph" class="visualization-view__graph" :style="{ height: containerHeight, width: containerWidth }" />
+  <div
+    class="visualization-view__wrapper"
+    :style="{ height: containerHeight, width: containerWidth }"
+  >
+    <div
+      ref="graph"
+      class="visualization-view__graph"
+      :style="{ height: containerHeight, width: containerWidth }"
+    />
   </div>
 </template>
 

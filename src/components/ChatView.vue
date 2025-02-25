@@ -2,45 +2,75 @@
   <div class="chat-view__wrapper">
     <div class="chat-view__inner-wrapper">
       <!-- Loading Message -->
-      <div class="alert alert-primary" role="alert" v-if="loadingText">
-        <i class="fa-solid fa-info-circle"></i>
+      <div
+        v-if="loadingText"
+        class="alert alert-primary"
+        role="alert"
+      >
+        <i class="fa-solid fa-info-circle" />
         WebLLM: {{ loadingText }}
       </div>
 
       <!-- User Input -->
       <div class="mb-3">
-        <label for="userQuestion" class="form-label">Enter your question:</label>
+        <label
+          for="userQuestion"
+          class="form-label"
+        >Enter your question:</label>
         <div class="input-group">
-          <input type="text" id="userQuestion" class="form-control" v-model="userQuestion"
-            placeholder="Ask a question..." @keyup.enter="handleQuery" />
-          <button class="btn btn-primary" @click="handleQuery" :disabled="loading">
-            <i class="fa-solid fa-paper-plane"></i> Ask
+          <input
+            id="userQuestion"
+            v-model="userQuestion"
+            type="text"
+            class="form-control"
+            placeholder="Ask a question..."
+            @keyup.enter="handleQuery"
+          >
+          <button
+            class="btn btn-primary"
+            :disabled="loading"
+            @click="handleQuery"
+          >
+            <i class="fa-solid fa-paper-plane" /> Ask
           </button>
         </div>
       </div>
 
       <!-- Error Message (Now Appears Below User Input) -->
-      <div class="alert alert-danger mt-2" role="alert" v-if="errorMessage">
-        <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMessage }}
+      <div
+        v-if="errorMessage"
+        class="alert alert-danger mt-2"
+        role="alert"
+      >
+        <i class="fa-solid fa-triangle-exclamation" /> {{ errorMessage }}
       </div>
 
       <!-- Generated Query -->
-      <div class="mt-3" v-if="generatedQuery">
+      <div
+        v-if="generatedQuery"
+        class="mt-3"
+      >
         <label class="form-label">Generated Cypher Query:</label>
         <pre class="query-box"><code>{{ generatedQuery }}</code></pre>
       </div>
 
       <!-- Raw JSON Result -->
-      <div class="mt-3" v-if="rawResult">
+      <div
+        v-if="rawResult"
+        class="mt-3"
+      >
         <label class="form-label">Raw JSON Result:</label>
         <pre class="json-box"><code>{{ rawResult }}</code></pre>
       </div>
 
       <!-- Natural Language Response -->
-      <div class="mt-3" v-if="queryResponse">
+      <div
+        v-if="queryResponse"
+        class="mt-3"
+      >
         <label class="form-label">Explanation:</label>
         <div class="alert alert-success">
-          <i class="fa-solid fa-comment"></i> {{ queryResponse }}
+          <i class="fa-solid fa-comment" /> {{ queryResponse }}
         </div>
       </div>
     </div>

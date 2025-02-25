@@ -1,17 +1,28 @@
 <template>
   <div>
-    <drop-zone v-if="!isFileLoaded && !isFileLoading" @files-selected="handleFilesSelected" />
-    <div v-else-if="isFileLoading" class="file-loading__container">
+    <drop-zone
+      v-if="!isFileLoaded && !isFileLoading"
+      @files-selected="handleFilesSelected"
+    />
+    <div
+      v-else-if="isFileLoading"
+      class="file-loading__container"
+    >
       <code ref="codeBox">
-        <pre v-text="loadingMessage" ref="preBox" />
+        <pre
+          ref="preBox"
+          v-text="loadingMessage"
+        />
       </code>
     </div>
-    <div v-else class="main-layout__container">
+    <div
+      v-else
+      class="main-layout__container"
+    >
       <visualization-view />
 
       <chat-view />
     </div>
-
   </div>
 </template>
 
