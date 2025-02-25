@@ -80,8 +80,8 @@ export default {
   },
   methods: {
     async handleFilesSelected(files) {
-      await Kuzu.init();
       this.isFileLoading = true;
+      await Kuzu.init();
       for (let i = 0; i < files.length; ++i) {
         await this.converter.handleFile(files[i]);
       }
