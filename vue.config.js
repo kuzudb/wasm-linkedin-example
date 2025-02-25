@@ -26,6 +26,9 @@ module.exports = defineConfig({
     },
   },
   configureWebpack: {
+    optimization: {
+      minimize: false
+    },
     plugins: [
       new CopyWebpackPlugin({
         patterns: [
