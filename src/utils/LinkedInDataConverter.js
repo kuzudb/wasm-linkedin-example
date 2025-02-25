@@ -197,7 +197,6 @@ class LinkedInDataConverter {
     const createOwnerQuery = `CREATE NODE TABLE Owner (firstName STRING, lastName STRING, headline STRING, geoLocation STRING, industry STRING, summary STRING, PRIMARY KEY(firstName));`;
     await this.kuzu.query(createOwnerQuery);
 
-
     const createCompanyQuery = `CREATE NODE TABLE Company (name STRING, PRIMARY KEY(name));`;
     await this.kuzu.query(createCompanyQuery);
 

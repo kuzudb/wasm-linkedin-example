@@ -49,7 +49,7 @@ export default {
   computed: {
     loadingMessage() {
       if (!this.converter || !this.isFileLoading) {
-        return "";
+        return "Initializing Kùzu WebAssembly module...";
       }
       return this.converter.logs.join("\n");
     },
@@ -79,8 +79,8 @@ export default {
     await WebLlm.init();
   },
   methods: {
-
     async handleFilesSelected(files) {
+      await Kuzu.init();
       this.isFileLoading = true;
       for (let i = 0; i < files.length; ++i) {
         await this.converter.handleFile(files[i]);
