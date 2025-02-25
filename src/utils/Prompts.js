@@ -32,6 +32,7 @@ ${question}
 
 
 const CYPHER_QA_PROMPT = (question, context) => {
+  const formatted = JSON.stringify(context, int128Replacer, 2);
   const prompt = `You are an assistant that helps to form nice and human understandable answers.
 The information part contains the provided information that you must use to construct an answer.
 The provided information is authoritative, you must never doubt it or try to use your internal knowledge to correct it.
@@ -46,11 +47,14 @@ Follow this example when generating answers.
 If the provided information is empty, say that you don't know the answer.
 If there is an error in the provided information, say that you can't provide an answer due to query error.
 Information:
-${JSON.stringify(context, int128Replacer, 2)}
+${formatted}
 
 Question: ${question}
 Helpful Answer:`;
-  return prompt;
+  return {
+    prompt,
+    formattedJson: formatted
+  }
 };
 
 export {

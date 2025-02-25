@@ -1,6 +1,6 @@
 import * as webllm from "@mlc-ai/web-llm";
 import { CYPHER_QA_PROMPT, QUERY_GENERATION_PROMPT } from "./Prompts";
-const MODEL_NAME = "Llama-3.1-8B-Instruct-q4f32_1-MLC";
+const MODEL_NAME = "Mistral-7B-Instruct-v0.3-q4f32_1-MLC";
 import Kuzu from './KuzuWasm';
 
 class WebLlm {
@@ -8,6 +8,7 @@ class WebLlm {
     window.webLlm = this;
     this.initializationPromise = null;
     this.engine = null;
+    this.loadingText = null;
   }
 
   async init() {
@@ -25,7 +26,7 @@ class WebLlm {
     this.engine = await webllm.CreateMLCEngine(MODEL_NAME, {
       appConfig,
       initProgressCallback: (progress) => {
-        console.log("MLC init progress:", progress);
+        this.loadingText = progress.text;
       }
     });
     console.timeEnd("MLC init");
@@ -36,27 +37,32 @@ class WebLlm {
     return this.engine;
   }
 
-  async kuzuQaChian(question) {
+  async generateQuery(question) {
     const engine = await this.getEngine();
     const schema = await Kuzu.getSchema();
-    let prompt = QUERY_GENERATION_PROMPT(question, schema);
+    const prompt = QUERY_GENERATION_PROMPT(question, schema);
     console.log("Query generation prompt:", prompt);
-    let messages = [{ role: "user", content: prompt }];
-    let reply = await engine.chat.completions.create({
+    const messages = [{ role: "user", content: prompt }];
+    const reply = await engine.chat.completions.create({
+      messages,
+    });
+    const response = reply.choices[0].message.content;
+    console.log("Generated query:", response);
+    return response;
+  }
+
+  async runQueryAndExplain(question, query) {
+    const engine = await this.getEngine();
+    const queryResult = await Kuzu.query(query);
+    const { prompt, formattedJson } = CYPHER_QA_PROMPT(question, queryResult.rows);
+    console.log("Cypher QA prompt:", prompt);
+    const messages = [{ role: "user", content: prompt }];
+    const reply = await engine.chat.completions.create({
       messages,
     });
     let response = reply.choices[0].message.content;
-    console.log("Generated query:", response);
-    const queryResult = await Kuzu.query(response);
-    prompt = CYPHER_QA_PROMPT(question, queryResult.rows);
-    console.log("Cypher QA prompt:", prompt);
-    messages = [{ role: "user", content: prompt }];
-    reply = await engine.chat.completions.create({
-      messages,
-    });
-    response = reply.choices[0].message.content;
     console.log("Generated response:", response);
-    return response;
+    return { response, raw: formattedJson };
   }
 }
 
