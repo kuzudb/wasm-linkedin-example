@@ -189,7 +189,6 @@ class LinkedInDataConverter {
         receivedOn: timestamp,
       });
     }
-    console.log("Messages:", this.messages);
   }
 
   async createTables() {
