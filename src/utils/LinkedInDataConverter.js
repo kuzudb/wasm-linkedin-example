@@ -192,43 +192,60 @@ class LinkedInDataConverter {
   }
 
   async createTables() {
+    const db = await this.kuzu.getDb();
+    const conn = new this.kuzu.kuzu.Connection(db);
+    let res;
     // Create schema
     this.logs.push("Creating schema...");
     const createOwnerQuery = `CREATE NODE TABLE Owner (firstName STRING, lastName STRING, headline STRING, geoLocation STRING, industry STRING, summary STRING, PRIMARY KEY(firstName));`;
-    await this.kuzu.query(createOwnerQuery);
+    res = await conn.query(createOwnerQuery);
+    await res.close();
 
     const createCompanyQuery = `CREATE NODE TABLE Company (name STRING, PRIMARY KEY(name));`;
-    await this.kuzu.query(createCompanyQuery);
+    res = await conn.query(createCompanyQuery);
+    await res.close();
 
     const createContactQuery = `CREATE NODE TABLE Contact (firstName STRING, lastName STRING, url STRING, email STRING, PRIMARY KEY(url));`;
-    await this.kuzu.query(createContactQuery);
+    res = await conn.query(createContactQuery);
+    await res.close();
 
     const createConnectsQuery = `CREATE REL TABLE Connects (FROM Owner TO Contact, connectedOn DATE);`;
-    await this.kuzu.query(createConnectsQuery);
+    res = await conn.query(createConnectsQuery);
+    await res.close();
 
     const createSkillQuery = `CREATE NODE TABLE Skill (name STRING, PRIMARY KEY(name));`;
-    await this.kuzu.query(createSkillQuery);
+    res = await conn.query(createSkillQuery);
+    await res.close();
 
     const createHasSkillQuery = `CREATE REL TABLE HasSkill (FROM Owner TO Skill);`;
-    await this.kuzu.query(createHasSkillQuery);
+    res = await conn.query(createHasSkillQuery);
+    await res.close();
 
     const createWorksAtQuery = `CREATE REL TABLE WorksAt (FROM Owner TO Company, FROM Contact TO Company, position STRING);`;
-    await this.kuzu.query(createWorksAtQuery);
+    res = await conn.query(createWorksAtQuery);
+    await res.close();
 
     const createEndorsesQuery = `CREATE REL TABLE Endorses (FROM Contact TO Skill, endorsedOn TIMESTAMP);`;
-    await this.kuzu.query(createEndorsesQuery);
+    res = await conn.query(createEndorsesQuery);
+    await res.close();
 
     const createFollowsQuery = `CREATE REL TABLE Follows (FROM Owner TO Company, since TIMESTAMP);`;
-    await this.kuzu.query(createFollowsQuery);
+    res = await conn.query(createFollowsQuery);
+    await res.close();
 
     const createMessagesQuery = `CREATE REL TABLE Messages (FROM Owner TO Contact, FROM Contact TO Owner, subject STRING, content STRING, receivedOn TIMESTAMP);`;
-    await this.kuzu.query(createMessagesQuery);
+    res = await conn.query(createMessagesQuery);
+    await res.close();
     this.logs.push("Schema created.");
 
     // Create Owner
     this.logs.push("Creating owner...");
-    const insertOwnerQuery = `CREATE (o:Owner {firstName: $firstName, lastName: $lastName, headline: $headline, geoLocation: $geoLocation, industry: $industry, summary: $summary})`;
-    await this.kuzu.query(insertOwnerQuery, JSON.parse(JSON.stringify(this.owner)));
+    const insertOwnerQuery =
+      await conn.prepare(
+        `CREATE (o:Owner {firstName: $firstName, lastName: $lastName, headline: $headline, geoLocation: $geoLocation, industry: $industry, summary: $summary})`
+      );
+    await conn.execute(insertOwnerQuery, JSON.parse(JSON.stringify(this.owner)));
+    await insertOwnerQuery.close();
     this.logs.push("Owner created.");
 
     let counter;
@@ -236,11 +253,12 @@ class LinkedInDataConverter {
     counter = 0;
     this.logs.push("Creating companies...");
     // Create Company
+    const insertCompanyQuery = await conn.prepare(`CREATE (c:Company {name: $name})`);
     for (const company of this.companies) {
-      const insertCompanyQuery = `CREATE (c:Company {name: $name})`;
-      await this.kuzu.query(insertCompanyQuery, { name: company });
+      await conn.execute(insertCompanyQuery, { name: company });
       counter++;
     }
+    await insertCompanyQuery.close();
     this.logs.push(`Created ${counter} companies.`);
 
     const connectionUrls = new Set(this.connections.map(connection => connection.url));
@@ -248,44 +266,68 @@ class LinkedInDataConverter {
     counter = 0;
     this.logs.push("Creating connections...");
     // Create Connection
+    const insertConnectionQuery =
+      await conn.prepare(
+        `CREATE (c:Contact {firstName: $firstName, lastName: $lastName, url: $url, email: $email})`
+      );
+    const insertConnectsQuery =
+      await conn.prepare(
+        `MATCH (o:Owner), (c:Contact) WHERE o.firstName = $ownerFirstName AND c.url = $url CREATE (o)-[r:Connects {connectedOn: DATE($connectedOn)}]->(c)`
+      );
+    const insertConnectionWorksAtQuery =
+      await conn.prepare(
+        `MATCH (c:Contact), (co:Company) WHERE c.url = $url AND co.name = $company CREATE (c)-[r:WorksAt {position: $position}]->(co)`
+      );
+
     for (const connection of this.connections) {
-      const insertConnectionQuery = `CREATE (c:Contact {firstName: $firstName, lastName: $lastName, url: $url, email: $email})`;
       const clonedConnection = JSON.parse(JSON.stringify(connection));
       delete clonedConnection.connectedOn;
       delete clonedConnection.company;
       delete clonedConnection.position;
-      await this.kuzu.query(insertConnectionQuery, clonedConnection);
-      const insertConnectsQuery = `MATCH (o:Owner), (c:Contact) WHERE o.firstName = $ownerFirstName AND c.url = $url CREATE (o)-[r:Connects {connectedOn: DATE($connectedOn)}]->(c)`;
-      await this.kuzu.query(insertConnectsQuery, { ownerFirstName: this.owner.firstName, url: connection.url, connectedOn: connection.connectedOn });
+      await conn.execute(insertConnectionQuery, clonedConnection);
+      await conn.execute(insertConnectsQuery, { ownerFirstName: this.owner.firstName, url: connection.url, connectedOn: connection.connectedOn });
       if (!connection.company || !connection.position) {
         continue;
       }
-      const insertCompanyQuery = `MATCH (c:Contact), (co:Company) WHERE c.url = $url AND co.name = $company CREATE (c)-[r:WorksAt {position: $position}]->(co)`;
-      await this.kuzu.query(insertCompanyQuery, {
+      await conn.execute(insertConnectionWorksAtQuery, {
         url: connection.url,
         company: connection.company,
         position: connection.position
       });
       counter++;
     }
+    await insertConnectionQuery.close();
+    await insertConnectsQuery.close();
+    await insertConnectionWorksAtQuery.close();
     this.logs.push(`Created ${counter} connections.`);
 
     // Create Skill
     counter = 0;
     this.logs.push("Creating skills...");
+    const insertSkillQuery =
+      await conn.prepare(
+        `CREATE (s:Skill {name: $name})`
+      );
+    const insertHasSkillQuery =
+      await conn.prepare(
+        `MATCH (o:Owner), (s:Skill) WHERE o.firstName = $ownerFirstName AND s.name = $name CREATE (o)-[r:HasSkill]->(s)`
+      );
     for (const skill of this.skills) {
-      const insertSkillQuery = `CREATE (s:Skill {name: $name})`;
-      await this.kuzu.query(insertSkillQuery, { name: skill });
-
-      const insertHasSkillQuery = `MATCH (o:Owner), (s:Skill) WHERE o.firstName = $ownerFirstName AND s.name = $name CREATE (o)-[r:HasSkill]->(s)`;
-      await this.kuzu.query(insertHasSkillQuery, { ownerFirstName: this.owner.firstName, name: skill });
+      await conn.execute(insertSkillQuery, { name: skill });
+      await conn.execute(insertHasSkillQuery, { ownerFirstName: this.owner.firstName, name: skill });
       counter++;
     }
+    await insertSkillQuery.close();
+    await insertHasSkillQuery.close();
     this.logs.push(`Created ${counter} skills.`);
 
     // Create Endorsement
     counter = 0;
     this.logs.push("Creating endorsements...");
+    const insertEndorsementQuery =
+      await conn.prepare(
+        `MATCH (c:Contact), (s:Skill) WHERE c.url = $url AND s.name = $skill CREATE (c)-[r:Endorses {endorsedOn: $endorsedOn}]->(s)`
+      );
     for (const endorsement of this.endorsements) {
       // LinkedIn does not export the URL of the endorser in the same format as the connections
       // So we try to fix it here
@@ -293,52 +335,72 @@ class LinkedInDataConverter {
       if (!connectionUrls.has(fixedUrl)) {
         continue;
       }
-      const insertEndorsementQuery = `MATCH (c:Contact), (s:Skill) WHERE c.url = $url AND s.name = $skill CREATE (c)-[r:Endorses {endorsedOn: $endorsedOn}]->(s)`;
-      await this.kuzu.query(insertEndorsementQuery, {
+      await conn.execute(insertEndorsementQuery, {
         url: fixedUrl,
         skill: endorsement.skill,
         endorsedOn: endorsement.endorsedOn,
       });
       counter++;
     }
+    await insertEndorsementQuery.close();
     this.logs.push(`Created ${counter} endorsements.`);
 
     // Create Position
+    const insertPositionQuery =
+      await conn.prepare(
+        `MATCH (o:Owner), (co:Company) WHERE o.firstName = $ownerFirstName AND co.name = $company CREATE (o)-[r:WorksAt {position: $position}]->(co)`
+      );
     counter = 0;
     this.logs.push("Creating positions...");
     for (const position of this.positions) {
-      const insertPositionQuery = `MATCH (o:Owner), (co:Company) WHERE o.firstName = $ownerFirstName AND co.name = $company CREATE (o)-[r:WorksAt {position: $position}]->(co)`;
-      await this.kuzu.query(insertPositionQuery, { ownerFirstName: this.owner.firstName, company: position.company, position: position.position });
+      await conn.execute(insertPositionQuery, { ownerFirstName: this.owner.firstName, company: position.company, position: position.position });
       counter++;
     }
+    await insertPositionQuery.close();
     this.logs.push(`Created ${counter} positions.`);
 
     // Create Company Follows
     counter = 0;
+    const insertCompanyFollowQuery =
+      await conn.prepare(
+        `MATCH (o:Owner), (co:Company) WHERE o.firstName = $ownerFirstName AND co.name = $company CREATE (o)-[r:Follows {since: $since}]->(co)`
+      );
     this.logs.push("Creating company follows...");
     for (const companyFollow of this.companyFollows) {
-      const insertCompanyFollowQuery = `MATCH (o:Owner), (co:Company) WHERE o.firstName = $ownerFirstName AND co.name = $company CREATE (o)-[r:Follows {since: $since}]->(co)`;
-      await this.kuzu.query(insertCompanyFollowQuery, { ownerFirstName: this.owner.firstName, company: companyFollow.company, since: companyFollow.since });
+      await conn.execute(insertCompanyFollowQuery, { ownerFirstName: this.owner.firstName, company: companyFollow.company, since: companyFollow.since });
       counter++;
     }
+    await insertCompanyFollowQuery.close();
     this.logs.push(`Created ${counter} company follows.`);
 
     // Create Messages
     counter = 0;
     this.logs.push("Creating messages...");
+    const insertIncomingMessageQuery =
+      await conn.prepare(
+        `MATCH (o:Owner), (c:Contact) WHERE o.firstName = $ownerFirstName AND c.url = $url CREATE (c)-[r:Messages {subject: $subject, content: $content, receivedOn: $receivedOn}]->(o)`
+      );
+    const insertOutgoingMessageQuery =
+      await conn.prepare(
+        `MATCH (o:Owner), (c:Contact) WHERE o.firstName = $ownerFirstName AND c.url = $url CREATE (o)-[r:Messages {subject: $subject, content: $content, receivedOn: $receivedOn}]->(c)`
+      );
+
     for (const message of this.messages) {
       const isIncoming = connectionUrls.has(message.from);
       const isOutgoing = connectionUrls.has(message.to);
       if (isIncoming) {
-        const insertMessageQuery = `MATCH (o:Owner), (c:Contact) WHERE o.firstName = $ownerFirstName AND c.url = $url CREATE (c)-[r:Messages {subject: $subject, content: $content, receivedOn: $receivedOn}]->(o)`;
-        await this.kuzu.query(insertMessageQuery, { ownerFirstName: this.owner.firstName, url: message.from, subject: message.subject, content: message.content, receivedOn: message.receivedOn });
+        await conn.execute(
+          insertIncomingMessageQuery,
+          { ownerFirstName: this.owner.firstName, url: message.from, subject: message.subject, content: message.content, receivedOn: message.receivedOn });
       }
       if (isOutgoing) {
-        const insertMessageQuery = `MATCH (o:Owner), (c:Contact) WHERE o.firstName = $ownerFirstName AND c.url = $url CREATE (o)-[r:Messages {subject: $subject, content: $content, receivedOn: $receivedOn}]->(c)`;
-        await this.kuzu.query(insertMessageQuery, { ownerFirstName: this.owner.firstName, url: message.to, subject: message.subject, content: message.content, receivedOn: message.receivedOn });
+        await conn.execute(insertOutgoingMessageQuery, { ownerFirstName: this.owner.firstName, url: message.to, subject: message.subject, content: message.content, receivedOn: message.receivedOn });
       }
     }
+    await insertIncomingMessageQuery.close();
+    await insertOutgoingMessageQuery.close();
     this.logs.push(`Created ${counter} messages.`);
+    await conn.close();
     this.logs.push("Done.");
   }
 }

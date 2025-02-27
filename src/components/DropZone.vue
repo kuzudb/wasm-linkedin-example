@@ -1,28 +1,44 @@
 <template>
-  <div class="row">
-    <div class="col-md-2" />
-    <div class="col-md-8 mt-5">
-      <div class="bg-white p-5 rounded shadow-sm border">
-        <div class="dropzone d-block">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8 col-sm-10 mt-5">
+      <!-- Info Box -->
+      <div class="alert alert-info d-flex align-items-start p-3">
+        <i class="fa-solid fa-circle-info me-2 fs-5" />
+        <div>
+          You can request your LinkedIn data dump by following
+          <a
+            href="https://www.linkedin.com/help/linkedin/answer/a1339364/downloading-your-account-data"
+            target="_blank"
+          >
+            this link</a>.
+          After downloading the dump (<code>Basic_LinkedInDataExport_***.zip</code>), simply unzip it and drag all files
+          into the drop zone to use.
+        </div>
+      </div>
+
+      <!-- Dropzone Container -->
+      <div class="bg-white p-4 rounded-3 shadow-sm border">
+        <div class="dropzone text-center p-4">
           <label
             ref="dropzone"
             for="files"
             class="dropzone-container"
           >
-            <div class="file-icon"><i class="fa-solid fa-file-circle-plus text-primary" /></div>
-            <div class="text-center pt-3 px-5">
-              <p class="w-80 h5 text-dark fw-bold">Drag CSV files from your LinkedIn dump here to get started.
-              </p>
-              <div class="hr-sect">or</div>
-              <button
-                class="btn btn-primary mb-2"
-                @click="selectFiles"
-              >
-                <i class="fa-solid fa-folder-open" />
-                &nbsp;
-                Browse Files
-              </button>
+            <div class="file-icon text-primary">
+              <i class="fa-solid fa-file-circle-plus fs-1" />
             </div>
+            <p class="mt-3 fw-bold text-dark">
+              Drag CSV files from your LinkedIn dump here to get started.
+            </p>
+            <div class="position-relative my-3">
+              <span class="hr-sect">or</span>
+            </div>
+            <button
+              class="btn btn-primary"
+              @click="selectFiles"
+            >
+              <i class="fa-solid fa-folder-open" /> &nbsp; Browse Files
+            </button>
           </label>
           <input
             ref="fileInput"
@@ -37,7 +53,7 @@
   </div>
 </template>
 
-<script lang="js">
+<script>
 import Dropzone from "dropzone";
 
 export default {
@@ -48,7 +64,6 @@ export default {
       dropzone: null,
     };
   },
-
   mounted() {
     this.dropzone = new Dropzone(this.$refs.dropzone, {
       url: "/",
@@ -62,11 +77,9 @@ export default {
       this.$emit("filesSelected", files);
     });
   },
-
   beforeUnmount() {
     this.dropzone.destroy();
   },
-
   methods: {
     selectFiles() {
       this.$refs.fileInput.click();
@@ -74,31 +87,28 @@ export default {
     handleFilesSelected(e) {
       const files = e.target.files;
       this.$emit("filesSelected", files);
-      // Clear the input value to allow selecting the same file again
       e.target.value = "";
     },
   },
 };
-
 </script>
 
 <style lang="scss" scoped>
 .dropzone {
-  border: dashed 4px #ddd !important;
-  background-color: #f2f6fc;
-  border-radius: 15px;
+  border: 2px dashed #0d6efd;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    background-color: #e9ecef;
+  }
 
   .dropzone-container {
-    padding: 2rem 0;
     width: 100%;
     height: 100%;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #8c96a8;
-    z-index: 20;
+    padding: 2rem 0;
+    cursor: pointer;
   }
 
   .file-input {
@@ -113,29 +123,30 @@ export default {
   }
 
   .file-icon {
-    font-size: 60px;
+    font-size: 50px;
   }
 
   .hr-sect {
     display: flex;
-    flex-basis: 100%;
     align-items: center;
-    margin: 8px 0px;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 14px;
+    color: #6c757d;
   }
 
-  .hr-sect:before,
-  .hr-sect:after {
+  .hr-sect::before,
+  .hr-sect::after {
     content: "";
     flex-grow: 1;
-    background: #ddd;
+    background: #dee2e6;
     height: 1px;
-    font-size: 0px;
-    line-height: 0px;
-    margin: 0px 8px;
+    margin: 0 10px;
   }
 }
 
-.btn.btn-primary.mb-2 {
-  width: 400px;
+.btn.btn-primary {
+  width: 100%;
+  max-width: 300px;
 }
 </style>
