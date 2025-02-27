@@ -1,4 +1,5 @@
 import yaml from 'js-yaml';
+import { HARD_CODED_LINKEDIN_OWNER_URL } from "./Constants";
 
 const int128Replacer = (_, value) => {
   if (typeof value === "bigint") {
@@ -72,8 +73,11 @@ Generate the Kùzu dialect of Cypher with the following rules in mind:
 2. Only use the nodes and relationships provided in the schema.
 3. Use only the provided node and relationship types and properties in the schema.
 4. The dataset is from a user's LinkedIn data dump.
-5. There is only one "Owner" node. There is no need to filter by the "Owner" node.
-6. When referring to "I" or "me" in the question, use the "Owner" node.
+5. When referring to "I" or "me" in the question, use the LinkedIn owner's URL: "${HARD_CODED_LINKEDIN_OWNER_URL}" to uniquely identify the user. Do not use this information for other types of questions.
+6. "GetNotification" in the schema refers to a user getting notifications about a company. Do not use it to imply working at a company or being connected to a user.
+7. "WorksAt" in the schema refers to a user working at a company.
+8. "Connects" in the schema refers to a user being connected to another user.
+9. Always respect the direction of relationships defined in the schema.
 `;
   return prompt;
 };

@@ -20,12 +20,14 @@ export default {
     return {
       graphData: null,
       colors: {
+        Person: "#76b7b2", // teal
         Owner: "#76b7b2", // teal
         Company: "#9c755f", // brown
         Skill: "#e58d96", // pink
         Contact: "#d5b441", // yellow
       },
       sizeMap: {
+        Person: 100,
         Owner: 120,
         Company: 60,
         Skill: 60,
@@ -68,6 +70,8 @@ export default {
       let label, icon;
       switch (type) {
         case "Owner":
+        case "Person":
+        case "Contact":
           label = node.firstName + " " + node.lastName;
           icon = {
             face: '"Font Awesome 6 Free"',
@@ -90,15 +94,6 @@ export default {
           icon = {
             face: '"Font Awesome 6 Free"',
             code: "\uf0eb",
-            size: this.sizeMap[type],
-            color: this.colors[type],
-          };
-          break;
-        case "Contact":
-          label = node.firstName + " " + node.lastName;
-          icon = {
-            face: '"Font Awesome 6 Free"',
-            code: "\uf007",
             size: this.sizeMap[type],
             color: this.colors[type],
           };

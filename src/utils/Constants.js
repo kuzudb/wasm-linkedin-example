@@ -38,3 +38,5 @@ for (const key of Object.values(LINKEDIN_FILE_MAP)) {
   LINKEDIN_FILE_TYPES[key] = key;
 }
 export { LINKEDIN_FILE_TYPES };
+  
+export const HARD_CODED_LINKEDIN_OWNER_URL = "https://www.linkedin.com/in/__ACCOUNT_OWNER__";
