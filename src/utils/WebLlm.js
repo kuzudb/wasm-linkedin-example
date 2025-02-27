@@ -47,6 +47,7 @@ class WebLlm {
       messages,
     });
     const response = reply.choices[0].message.content;
+    console.log(reply);
     console.log("Generated query:", response);
     return response;
   }
@@ -60,6 +61,7 @@ class WebLlm {
     const reply = await engine.chat.completions.create({
       messages,
     });
+    console.log(reply);
     let response = reply.choices[0].message.content;
     console.log("Generated response:", response);
     return { response, raw: formattedJson };
