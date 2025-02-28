@@ -72,8 +72,12 @@ Generate the Kùzu dialect of Cypher with the following rules in mind:
 2. Only use the nodes and relationships provided in the schema.
 3. Use only the provided node and relationship types and properties in the schema.
 4. The dataset is from a user's LinkedIn data dump.
-5. There is only one "Owner" node. There is no need to filter by the "Owner" node.
-6. When referring to "I" or "me" in the question, use the "Owner" node.
+5. There is only one "Owner" node. There is no need to filter by the "Owner" node. When referring to "I" or "me" in the question, use the "Owner" node.
+6. If the question is about a contact, DO NOT use the "Owner" node.
+7. "Follows" in the schema refers to getting notifications about a company. Do not use it to imply working at a company or being connected to a user.
+8. "WorksAt" in the schema refers to a user working at a company.
+9. "Connects" in the schema refers to a user being connected to another user.
+10. Always respect the direction of relationships defined in the schema.
 `;
   return prompt;
 };
