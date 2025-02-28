@@ -15,7 +15,7 @@ npm run serve
 ## Check code style with ESLint
 
 ```
-npm run eslint
+npm run lint
 ```
 
 ## Build and serve for production
