@@ -1,4 +1,4 @@
-1<template>
+<template>
   <div
     class="visualization-view__wrapper"
     :style="{ height: containerHeight, width: containerWidth }"
